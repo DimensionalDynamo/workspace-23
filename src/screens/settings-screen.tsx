@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { saveStateToCloud, loadStateFromCloud } from '@/lib/sync'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -14,20 +15,23 @@ import {
   Monitor,
   Palette,
   Music,
-  Volume2,
   Brain,
   Database,
   RotateCcw,
   Download,
   Upload,
   Trash2,
-  Bell,
   Zap,
-  Moon,
+  Cloud,
+  CloudOff,
+  RefreshCw,
   Sun,
+  Bell,
 } from 'lucide-react'
 import { useStore, PomodoroBackgroundType } from '@/lib/store'
 import { toast } from 'sonner'
+
+
 
 const BACKGROUND_PRESETS = [
   {
@@ -95,11 +99,49 @@ export function SettingsScreen() {
     removeCustomMusicTrack,
     userName,
     setUserName,
+    autoSyncEnabled,
+    setAutoSyncEnabled,
+    lastSyncTimestamp,
+    setLastSyncTimestamp,
   } = useStore()
 
   const [customBgFile, setCustomBgFile] = useState<File | null>(null)
   const [bgPreviewUrl, setBgPreviewUrl] = useState<string>('')
   const [userNameInput, setUserNameInput] = useState(userName)
+  const [isSyncing, setIsSyncing] = useState(false)
+
+
+  // Auto-sync on app open
+  useEffect(() => {
+    if (autoSyncEnabled) {
+      handleManualSync(true)
+    }
+  }, [])
+
+  const handleManualSync = async (silent = false) => {
+    setIsSyncing(true)
+    try {
+      const appState = useStore.getState()
+      const success = await saveStateToCloud(appState)
+      if (success) {
+        setLastSyncTimestamp(Date.now())
+        if (!silent) {
+          toast.success('Data synced to cloud successfully!')
+        }
+      } else {
+        if (!silent) {
+          toast.error('Sync failed. Please try again.')
+        }
+      }
+    } catch (error) {
+      console.error('Sync error:', error)
+      if (!silent) {
+        toast.error('Sync failed. Check your connection.')
+      }
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   const statsData = {
     totalTasks: tasks.length,
@@ -225,24 +267,24 @@ export function SettingsScreen() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-2">Settings</h1>
-        <p className="text-muted-foreground">Customize your experience</p>
+    <div className="space-y-6 pb-24 mobile-scroll-fix">
+      <div className="glass-card p-6">
+        <h1 className="text-2xl font-bold mb-2 gradient-text playfair">Settings</h1>
+        <p className="text-slate-400">Customize your experience</p>
       </div>
 
       <Tabs defaultValue="pomodoro" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          <TabsTrigger value="pomodoro">Pomodoro</TabsTrigger>
-          <TabsTrigger value="background">Background</TabsTrigger>
-          <TabsTrigger value="ai">AI</TabsTrigger>
-          <TabsTrigger value="music">Music</TabsTrigger>
-          <TabsTrigger value="data">Data</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 glass-card border-0 p-1 h-auto">
+          <TabsTrigger value="pomodoro" className="data-[state=active]:bg-purple-500/20">Pomodoro</TabsTrigger>
+          <TabsTrigger value="background" className="data-[state=active]:bg-purple-500/20">Background</TabsTrigger>
+          <TabsTrigger value="ai" className="data-[state=active]:bg-purple-500/20">AI</TabsTrigger>
+          <TabsTrigger value="music" className="data-[state=active]:bg-purple-500/20">Music</TabsTrigger>
+          <TabsTrigger value="data" className="data-[state=active]:bg-purple-500/20">Data</TabsTrigger>
         </TabsList>
 
         {/* Pomodoro Settings */}
-        <TabsContent value="pomodoro" className="space-y-4 mt-4">
-          <Card>
+        <TabsContent value="pomodoro" className="space-y-4 mt-6">
+          <Card className="glass-card border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Monitor className="h-5 w-5 text-primary" />
@@ -316,8 +358,8 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* Background Settings */}
-        <TabsContent value="background" className="space-y-4 mt-4">
-          <Card>
+        <TabsContent value="background" className="space-y-4 mt-6">
+          <Card className="glass-card border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5 text-purple-500" />
@@ -337,11 +379,10 @@ export function SettingsScreen() {
                     <button
                       key={preset.id}
                       onClick={() => handleBackgroundChange(preset.id)}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        isSelected
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border hover:border-primary/50'
-                      }`}
+                      className={`p-4 rounded-lg border-2 transition-all ${isSelected
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border hover:border-primary/50'
+                        }`}
                     >
                       <div className="w-16 h-16 rounded-md mb-2 bg-white/10 mx-auto"></div>
                       <p className="text-sm font-medium">{preset.name}</p>
@@ -411,8 +452,8 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* AI Settings */}
-        <TabsContent value="ai" className="space-y-4 mt-4">
-          <Card>
+        <TabsContent value="ai" className="space-y-4 mt-6">
+          <Card className="glass-card border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Brain className="h-5 w-5 text-blue-500" />
@@ -466,8 +507,8 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* Music Settings */}
-        <TabsContent value="music" className="space-y-4 mt-4">
-          <Card>
+        <TabsContent value="music" className="space-y-4 mt-6">
+          <Card className="glass-card border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Music className="h-5 w-5 text-pink-500" />
@@ -541,8 +582,8 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* Data Management */}
-        <TabsContent value="data" className="space-y-4 mt-4">
-          <Card>
+        <TabsContent value="data" className="space-y-4 mt-6">
+          <Card className="glass-card border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Database className="h-5 w-5 text-orange-500" />
@@ -567,6 +608,65 @@ export function SettingsScreen() {
                   <div className="text-2xl font-bold text-primary">{statsData.totalSessions}</div>
                   <p className="text-xs text-muted-foreground">Sessions</p>
                 </div>
+              </div>
+
+              {/* Auto Sync Section */}
+              <div className="space-y-4 border-t pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {autoSyncEnabled ? (
+                      <Cloud className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <CloudOff className="h-5 w-5 text-muted-foreground" />
+                    )}
+                    <div>
+                      <h3 className="text-sm font-medium">Auto Cloud Sync</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Automatically sync your data across devices
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={autoSyncEnabled}
+                    onCheckedChange={(checked) => {
+                      setAutoSyncEnabled(checked)
+                      toast(checked ? 'Auto sync enabled! Your data will sync automatically.' : 'Auto sync disabled.')
+                    }}
+                  />
+                </div>
+
+                {autoSyncEnabled && (
+                  <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                    <div className="flex items-center gap-2 text-green-500 mb-2">
+                      <RefreshCw className="h-4 w-4" />
+                      <span className="text-sm font-medium">Sync Active</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {lastSyncTimestamp > 0
+                        ? `Last synced: ${new Date(lastSyncTimestamp).toLocaleString()}`
+                        : 'Waiting for first sync...'}
+                    </p>
+                  </div>
+                )}
+
+                {!autoSyncEnabled && (
+                  <div className="p-4 bg-muted/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground">
+                      Enable auto sync to automatically backup your data to the cloud and sync across multiple devices.
+                    </p>
+                  </div>
+                )}
+
+                {/* Manual Sync Button */}
+                <Button
+                  onClick={() => handleManualSync(false)}
+                  disabled={isSyncing}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+                  {isSyncing ? 'Syncing...' : 'Sync Now'}
+                </Button>
               </div>
 
               <div className="space-y-4 border-t pt-6">
@@ -599,7 +699,7 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* User Profile (Bottom Card) */}
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sun className="h-5 w-5 text-yellow-500" />

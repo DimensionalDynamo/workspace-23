@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { NotificationManager } from "@/components/notification-manager";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -37,8 +39,8 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{
-    children: React.ReactNode;
-  }>) {
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -59,6 +61,8 @@ export default function RootLayout({
         >
           {children}
           <Toaster />
+          <SonnerToaster position="top-right" richColors />
+          <NotificationManager />
         </ThemeProvider>
       </body>
     </html>

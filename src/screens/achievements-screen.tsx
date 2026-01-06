@@ -134,7 +134,7 @@ export function AchievementsScreen() {
         {/* Achievements Tab */}
         <TabsContent value="achievements" className="space-y-6 mt-4">
           {/* Overall Progress */}
-          <Card>
+          <Card className="glass-card border-0">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -186,17 +186,15 @@ export function AchievementsScreen() {
             {filteredBadges.map((badge) => (
               <Card
                 key={badge.id}
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  !badge.unlocked ? 'opacity-60' : 'border-primary'
-                }`}
+                className={`cursor-pointer transition-all hover:shadow-md ${!badge.unlocked ? 'opacity-60' : 'border-primary'
+                  }`}
                 onClick={() => setSelectedBadge(badge)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <div
-                      className={`text-4xl ${
-                        !badge.unlocked ? 'grayscale opacity-50' : 'animate-bounce-slow'
-                      }`}
+                      className={`text-4xl ${!badge.unlocked ? 'grayscale opacity-50' : 'animate-bounce-slow'
+                        }`}
                     >
                       {badge.icon}
                     </div>
@@ -242,7 +240,7 @@ export function AchievementsScreen() {
         {/* Rewards Tab */}
         <TabsContent value="rewards" className="space-y-6 mt-4">
           {/* Unlocked Badges Count */}
-          <Card>
+          <Card className="glass-card border-0">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -347,7 +345,7 @@ export function AchievementsScreen() {
           {selectedBadge && (
             <div className="space-y-4">
               <p className="text-muted-foreground">{selectedBadge.description}</p>
-              
+
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Category</span>

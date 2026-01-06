@@ -17,6 +17,7 @@ export interface LocalStorageData {
   aiEnabled: boolean
   geminiApiKey: string
   openaiApiKey: string
+  aiEngine: 'gemini' | 'chatgpt'
 
   // Navigation
   lastScreen: string
@@ -26,7 +27,19 @@ export interface LocalStorageData {
   todayStudyTime: number
   currentStreak: number
   longestStreak: number
+
+  // User
+  userName: string
+
+  // Pomodoro
+  pomodoroBackground: { type: string; value: string }
+  selectedMusicTrack: string
+
+  // Sync
+  autoSyncEnabled: boolean
+  lastSyncTimestamp: number
 }
+
 
 const DEFAULT_STORAGE: LocalStorageData = {
   theme: 'system',
@@ -42,6 +55,7 @@ const DEFAULT_STORAGE: LocalStorageData = {
   aiEnabled: true,
   geminiApiKey: 'AIzaSyDFelmlkunv3xbVeLlrHYSSW7MJDA7H_9c',
   openaiApiKey: 'sk-1234uvwxabcd5678uvwxabcd1234uvwxabcd5678',
+  aiEngine: 'gemini',
 
   lastScreen: 'dashboard',
 
@@ -49,7 +63,16 @@ const DEFAULT_STORAGE: LocalStorageData = {
   todayStudyTime: 0,
   currentStreak: 0,
   longestStreak: 0,
+
+  userName: 'Aditya Anand',
+  pomodoroBackground: { type: 'gradient', value: 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' },
+  selectedMusicTrack: 'none',
+
+  // Sync
+  autoSyncEnabled: false,
+  lastSyncTimestamp: 0,
 }
+
 
 export const localStorageService = {
   // Get a value from local storage

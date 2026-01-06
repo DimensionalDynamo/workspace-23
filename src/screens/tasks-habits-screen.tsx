@@ -226,7 +226,7 @@ export function TasksHabitsScreen() {
           </div>
 
           {/* AI Suggestions */}
-          <Card>
+          <Card className="glass-card border-0">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-purple-500" />
@@ -248,7 +248,7 @@ export function TasksHabitsScreen() {
           </Card>
 
           {/* Filters */}
-          <Card>
+          <Card className="glass-card border-0">
             <CardContent className="pt-6">
               <div className="flex flex-wrap gap-2">
                 <Select value={taskFilter} onValueChange={(value: any) => setTaskFilter(value)}>
@@ -299,7 +299,7 @@ export function TasksHabitsScreen() {
           {/* Task List */}
           <div className="space-y-3">
             {filteredTasks.length === 0 ? (
-              <Card>
+              <Card className="glass-card border-0">
                 <CardContent className="py-12 text-center">
                   <p className="text-muted-foreground">No tasks found. Add your first task!</p>
                 </CardContent>
@@ -397,7 +397,7 @@ export function TasksHabitsScreen() {
           {/* Habits List */}
           <div className="space-y-4">
             {habits.length === 0 ? (
-              <Card>
+              <Card className="glass-card border-0">
                 <CardContent className="py-12 text-center">
                   <p className="text-muted-foreground">No habits yet. Create your first habit!</p>
                 </CardContent>
@@ -446,13 +446,12 @@ export function TasksHabitsScreen() {
                             </span>
                             <button
                               onClick={() => toggleHabitDay(habit.id, index)}
-                              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-                                habit.weeklyHistory[index]
+                              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${habit.weeklyHistory[index]
                                   ? 'bg-primary text-primary-foreground'
                                   : day.isToday
-                                  ? 'bg-primary/10 hover:bg-primary/20'
-                                  : 'bg-muted/30'
-                              }`}
+                                    ? 'bg-primary/10 hover:bg-primary/20'
+                                    : 'bg-muted/30'
+                                }`}
                             >
                               {habit.weeklyHistory[index] ? (
                                 <CheckCircle2 className="h-5 w-5" />

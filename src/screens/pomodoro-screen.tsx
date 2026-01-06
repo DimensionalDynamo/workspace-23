@@ -21,6 +21,10 @@ import {
   Video,
   Settings,
   Upload,
+  Youtube,
+  Link,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import { useStore } from '@/lib/store'
 
@@ -38,8 +42,15 @@ const DEFAULT_MUSIC_OPTIONS: MusicOption[] = [
   { id: 'none', name: 'No Music', type: 'ambient', url: '' },
   { id: 'rain', name: 'Rain Sounds', type: 'ambient', url: '' },
   { id: 'forest', name: 'Forest Sounds', type: 'ambient', url: '' },
-  { id: 'lofi', name: 'Lo-Fi Beats', type: 'youtube', url: '', videoUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk' },
-  { id: 'piano', name: 'Soft Piano', type: 'youtube', url: '', videoUrl: 'https://www.youtube.com/embed/5qap5aO4i9A' },
+]
+
+// Default YouTube tracks for focus
+const DEFAULT_YOUTUBE_TRACKS = [
+  { id: 'lofi-1', name: 'Lofi Hip Hop Radio', videoId: 'jfKfPfyJRdk' },
+  { id: 'nature-1', name: 'Rain & Thunder Sounds', videoId: 'sTGeUZzXSjM' },
+  { id: 'focus-1', name: 'Deep Focus Music', videoId: 'lTRiuFIWV54' },
+  { id: 'piano-1', name: 'Calm Piano Music', videoId: '1d8jDEc_9eY' },
+  { id: 'ambient-1', name: 'Ambient Study Music', videoId: 'sjkrrmBnpGE' },
 ]
 
 const BACKGROUND_PRESETS = [
@@ -105,10 +116,31 @@ export function PomodoroScreen() {
   const [youtubeVideoPlaying, setYoutubeVideoPlaying] = useState(false)
   const [showVideoControls, setShowVideoControls] = useState(false)
 
+  // YouTube player state
+  const [selectedYoutubeTrack, setSelectedYoutubeTrack] = useState<string | null>(null)
+  const [youtubeLink, setYoutubeLink] = useState('')
+  const [isYoutubePlayerVisible, setIsYoutubePlayerVisible] = useState(true)
+
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const youtubeIframeRef = useRef<HTMLIFrameElement>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const fullscreenElementRef = useRef<HTMLDivElement>(null)
+
+  // Extract YouTube video ID from URL
+  const extractYouTubeVideoId = (url: string): string | null => {
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+    const match = url.match(regex)
+    return match ? match[1] : null
+  }
+
+  // Handle custom YouTube link
+  const handleAddYoutubeLink = () => {
+    const videoId = extractYouTubeVideoId(youtubeLink)
+    if (videoId) {
+      setSelectedYoutubeTrack(videoId)
+      setYoutubeLink('')
+    }
+  }
 
   // Get time for current mode
   const getTimeForMode = (currentMode: TimerMode) => {
@@ -240,6 +272,10 @@ export function PomodoroScreen() {
         setMode('work')
       }
       setIsRunning(true)
+      // Resume YouTube if a track was selected
+      if (selectedYoutubeTrack) {
+        setYoutubeVideoPlaying(true)
+      }
     }
 
     // Play notification sound
@@ -262,7 +298,8 @@ export function PomodoroScreen() {
       }
       setIsRunning(true)
       setMusicPlaying(selectedMusic !== 'none')
-      if (selectedMusic?.includes('youtube')) {
+      // Start YouTube if a track is selected
+      if (selectedYoutubeTrack) {
         setYoutubeVideoPlaying(true)
       }
     }
@@ -271,6 +308,7 @@ export function PomodoroScreen() {
   const handlePause = () => {
     setIsRunning(false)
     setMusicPlaying(false)
+    setYoutubeVideoPlaying(false)
     if (activeSession) {
       const totalTime = getTimeForMode(activeSession.type === 'focus' ? 'work' : mode)
       const elapsed = totalTime - timeRemaining
@@ -410,7 +448,7 @@ export function PomodoroScreen() {
       </div>
 
       {/* Timer Display */}
-      <Card>
+      <Card className="glass-card border-0">
         <CardContent className={`py-12 bg-gradient-to-br ${getModeColor()}`}>
           <div className="text-center">
             <Badge variant="secondary" className="mb-4 text-lg px-4 py-2">
@@ -450,7 +488,7 @@ export function PomodoroScreen() {
 
       {/* Subject & Chapter Selection */}
       {mode === 'work' && (
-        <Card>
+        <Card className="glass-card border-0">
           <CardContent className="pt-6 space-y-4">
             <div className="space-y-2">
               <Label>Subject</Label>
@@ -480,7 +518,7 @@ export function PomodoroScreen() {
       )}
 
       {/* Music & Video Section */}
-      <Card>
+      <Card className="glass-card border-0">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
             <Label className="flex items-center gap-2">
@@ -576,8 +614,124 @@ export function PomodoroScreen() {
         </CardContent>
       </Card>
 
+      {/* YouTube Audio Section */}
+      <Card className="glass-card border-0">
+        <CardContent className="pt-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <Label className="flex items-center gap-2">
+              <Youtube className="h-4 w-4 text-red-500" />
+              YouTube Audio
+            </Label>
+            <span className="text-xs text-muted-foreground">144p for bandwidth</span>
+          </div>
+
+          {/* Quick Play Buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            {DEFAULT_YOUTUBE_TRACKS.map((track) => (
+              <Button
+                key={track.id}
+                variant={selectedYoutubeTrack === track.videoId ? 'default' : 'outline'}
+                size="sm"
+                className="justify-start gap-2 text-xs"
+                onClick={() => setSelectedYoutubeTrack(
+                  selectedYoutubeTrack === track.videoId ? null : track.videoId
+                )}
+              >
+                <Play className="h-3 w-3" />
+                <span className="truncate">{track.name}</span>
+              </Button>
+            ))}
+          </div>
+
+          {/* Custom YouTube Link */}
+          <div className="flex gap-2 pt-2 border-t">
+            <div className="flex-1 relative">
+              <Link className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+              <Input
+                value={youtubeLink}
+                onChange={(e) => setYoutubeLink(e.target.value)}
+                placeholder="Paste YouTube URL..."
+                className="pl-7 h-8 text-xs"
+              />
+            </div>
+            <Button
+              onClick={handleAddYoutubeLink}
+              disabled={!youtubeLink}
+              size="sm"
+              className="h-8"
+            >
+              <Play className="h-3 w-3" />
+            </Button>
+          </div>
+
+          {/* YouTube Player (Hideable) - Synced with Timer */}
+          {selectedYoutubeTrack && (
+            <div className="space-y-2 pt-2 border-t">
+              <div className="flex items-center justify-between">
+                <span className={`text-xs font-medium flex items-center gap-1 ${youtubeVideoPlaying ? 'text-red-400' : 'text-muted-foreground'}`}>
+                  <div className={`w-2 h-2 rounded-full ${youtubeVideoPlaying ? 'bg-red-500 animate-pulse' : 'bg-muted-foreground'}`} />
+                  {youtubeVideoPlaying ? 'Playing' : 'Paused (Start timer to play)'}
+                </span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs"
+                    onClick={() => setIsYoutubePlayerVisible(!isYoutubePlayerVisible)}
+                  >
+                    {isYoutubePlayerVisible ? (
+                      <><EyeOff className="h-3 w-3 mr-1" />Hide</>
+                    ) : (
+                      <><Eye className="h-3 w-3 mr-1" />Show</>
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs text-destructive"
+                    onClick={() => {
+                      setSelectedYoutubeTrack(null)
+                      setYoutubeVideoPlaying(false)
+                    }}
+                  >
+                    Stop
+                  </Button>
+                </div>
+              </div>
+
+              {/* Player - Only renders iframe when playing for performance */}
+              <div
+                className={`transition-all duration-300 ${isYoutubePlayerVisible ? 'opacity-100 h-[90px]' : 'opacity-0 h-[1px] overflow-hidden'}`}
+                style={{ pointerEvents: isYoutubePlayerVisible ? 'auto' : 'none' }}
+              >
+                <div className="bg-black rounded-lg overflow-hidden">
+                  {youtubeVideoPlaying ? (
+                    <iframe
+                      width="100%"
+                      height="90"
+                      src={`https://www.youtube.com/embed/${selectedYoutubeTrack}?autoplay=1&vq=small&quality=small&loop=1&playlist=${selectedYoutubeTrack}&modestbranding=1&rel=0&fs=0&controls=1&playsinline=1`}
+                      title="YouTube Audio Player"
+                      frameBorder="0"
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media;"
+                      className="rounded-lg"
+                      style={{ minHeight: '90px' }}
+                    />
+                  ) : (
+                    <div className="h-[90px] flex items-center justify-center text-muted-foreground text-xs">
+                      <Play className="h-4 w-4 mr-2" />
+                      Start timer to play music
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Settings */}
-      <Card>
+      <Card className="glass-card border-0">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
             <Label className="flex items-center gap-2">
@@ -601,7 +755,7 @@ export function PomodoroScreen() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </div >
   )
 
   const FullscreenView = () => (

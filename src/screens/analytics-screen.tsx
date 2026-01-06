@@ -24,7 +24,7 @@ export function AnalyticsScreen() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader>
             <CardTitle className="text-sm">Total Study Time</CardTitle>
           </CardHeader>
@@ -34,7 +34,7 @@ export function AnalyticsScreen() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader>
             <CardTitle className="text-sm">Tests Taken</CardTitle>
           </CardHeader>
@@ -44,7 +44,7 @@ export function AnalyticsScreen() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader>
             <CardTitle className="text-sm">Syllabus Progress</CardTitle>
           </CardHeader>

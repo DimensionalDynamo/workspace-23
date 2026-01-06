@@ -1,14 +1,20 @@
 import { create } from 'zustand'
 import { localStorageService } from '@/lib/storage'
+import { defaultNimetSyllabus } from '@/lib/nimcet-syllabus-data'
+
+// Spaced repetition intervals in days (after topic completion)
+const REVISION_INTERVALS = [1, 4, 7, 14, 30] // Day 1, Day 4, Day 7, Day 14, Day 30
 
 export type Screen =
   | 'dashboard'
   | 'pomodoro'
   | 'tasks'
   | 'analytics'
+  | 'nimcet'
   | 'ai'
   | 'achievements'
   | 'settings'
+
 
 export type TaskCategory = 'NIMCET' | 'BCA' | 'Personal'
 export type TaskPriority = 'low' | 'medium' | 'high'
@@ -26,9 +32,21 @@ export interface TopicStatus {
   subject: string
   chapter: string
   topic: string
-  status: 'Not Started' | 'Completed' | 'Needs Revision'
+  status: 'Not Started' | 'In Progress' | 'Practiced' | 'Revised'
   priority: 'high' | 'medium' | 'low' | null
 }
+
+export interface RevisionTask {
+  id: string
+  topicId: string
+  topicName: string
+  subjectName: string
+  chapterName: string
+  scheduledFor: string
+  status: 'pending' | 'done'
+  revisionNumber?: number
+}
+
 
 export interface Notification {
   id: string
@@ -46,6 +64,7 @@ export interface CustomMusicTrack {
   fileUrl: string
   addedAt: string
 }
+
 
 export interface DailyRoutineItem {
   id: string
@@ -317,6 +336,11 @@ interface AppState {
   addTopic: (topic: Omit<TopicStatus, 'id'>) => void
   updateTopicStatus: (id: string, status: TopicStatus['status']) => void
 
+  // Revision Tasks
+  revisionTasks: RevisionTask[]
+  setRevisionTasks: (tasks: RevisionTask[]) => void
+  updateRevisionTask: (id: string, updates: Partial<RevisionTask>) => void
+
   // Resources
   resources: Resource[]
   setResources: (resources: Resource[]) => void
@@ -381,6 +405,12 @@ interface AppState {
   setAIEnabled: (enabled: boolean) => void
   aiEngine: AIEngine
   setAIEngine: (engine: AIEngine) => void
+
+  // Sync
+  autoSyncEnabled: boolean
+  setAutoSyncEnabled: (enabled: boolean) => void
+  lastSyncTimestamp: number
+  setLastSyncTimestamp: (timestamp: number) => void
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -445,11 +475,11 @@ export const useStore = create<AppState>((set, get) => ({
     habits: state.habits.map((habit) =>
       habit.id === id
         ? {
-            ...habit,
-            weeklyHistory: habit.weeklyHistory.map((completed, i) =>
-              i === dayIndex ? !completed : completed
-            ),
-          }
+          ...habit,
+          weeklyHistory: habit.weeklyHistory.map((completed, i) =>
+            i === dayIndex ? !completed : completed
+          ),
+        }
         : habit
     ),
   })),
@@ -492,8 +522,8 @@ export const useStore = create<AppState>((set, get) => ({
     ),
   })),
 
-  // Topics
-  topics: [],
+  // Topics - auto-load syllabus if empty
+  topics: defaultNimetSyllabus,
   setTopics: (topics) => set({ topics }),
   addTopic: (topic) => set((state) => ({
     topics: [
@@ -504,11 +534,59 @@ export const useStore = create<AppState>((set, get) => ({
       },
     ],
   })),
-  updateTopicStatus: (id, status) => set((state) => ({
-    topics: state.topics.map((topic) =>
-      topic.id === id ? { ...topic, status } : topic
+  updateTopicStatus: (id, status) => {
+    const state = get()
+    const topic = state.topics.find(t => t.id === id)
+
+    // Update the topic status
+    set((state) => ({
+      topics: state.topics.map((t) =>
+        t.id === id ? { ...t, status } : t
+      ),
+    }))
+
+    // If status changed to 'Revised', schedule spaced repetition revisions
+    if (status === 'Revised' && topic) {
+      const now = new Date()
+      const newRevisionTasks: RevisionTask[] = REVISION_INTERVALS.map((days, index) => {
+        const scheduledDate = new Date(now)
+        scheduledDate.setDate(scheduledDate.getDate() + days)
+        return {
+          id: crypto.randomUUID(),
+          topicId: topic.id,
+          topicName: topic.topic,
+          subjectName: topic.subject,
+          chapterName: topic.chapter,
+          scheduledFor: scheduledDate.toISOString(),
+          status: 'pending' as const,
+          revisionNumber: index + 1,
+        }
+      })
+
+      // Add notification for immediate review
+      get().addNotification({
+        type: 'study_reminder',
+        title: '📚 Topic Completed!',
+        message: `Great job completing "${topic.topic}"! Do a quick review now, then revisions are scheduled for Days 1, 4, 7, 14, and 30.`,
+        priority: 'high',
+      })
+
+      // Add revision tasks to the store
+      set((state) => ({
+        revisionTasks: [...state.revisionTasks, ...newRevisionTasks],
+      }))
+    }
+  },
+
+  // Revision Tasks
+  revisionTasks: [],
+  setRevisionTasks: (tasks) => set({ revisionTasks: tasks }),
+  updateRevisionTask: (id, updates) => set((state) => ({
+    revisionTasks: state.revisionTasks.map((task) =>
+      task.id === id ? { ...task, ...updates } : task
     ),
   })),
+
 
   // Resources
   resources: [],
@@ -712,5 +790,17 @@ export const useStore = create<AppState>((set, get) => ({
   setAIEngine: (engine) => {
     set({ aiEngine: engine })
     localStorageService.set('aiEngine', engine)
+  },
+
+  // Sync
+  autoSyncEnabled: localStorageService.get('autoSyncEnabled') as boolean || false,
+  setAutoSyncEnabled: (enabled) => {
+    set({ autoSyncEnabled: enabled })
+    localStorageService.set('autoSyncEnabled', enabled)
+  },
+  lastSyncTimestamp: localStorageService.get('lastSyncTimestamp') as number || 0,
+  setLastSyncTimestamp: (timestamp) => {
+    set({ lastSyncTimestamp: timestamp })
+    localStorageService.set('lastSyncTimestamp', timestamp)
   },
 }))

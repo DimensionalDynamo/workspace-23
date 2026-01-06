@@ -102,12 +102,12 @@ export function DashboardScreen() {
   return (
     <div className="space-y-6">
       {/* Header with User Name & Live Time */}
-      <div className="flex items-center justify-between">
+      <div className="glass-card p-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent playfair">
+          <h1 className="text-3xl font-bold gradient-text playfair">
             Hello, {userName}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-slate-400 mt-1">
             {currentTime.toLocaleDateString('en-US', {
               weekday: 'long',
               year: 'numeric',
@@ -117,7 +117,7 @@ export function DashboardScreen() {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-3xl font-bold tabular-nums">
+          <p className="text-3xl font-bold tabular-nums gradient-text">
             {currentTime.toLocaleTimeString('en-US', {
               hour: '2-digit',
               minute: '2-digit',
@@ -130,7 +130,7 @@ export function DashboardScreen() {
       {/* Countdown Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Year 2026 Progress */}
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export function DashboardScreen() {
         </Card>
 
         {/* NIMCET Countdown */}
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               <div className="flex items-center gap-2">
@@ -187,7 +187,7 @@ export function DashboardScreen() {
       </div>
 
       {/* Study Progress */}
-      <Card>
+      <Card className="glass-card border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
@@ -219,7 +219,7 @@ export function DashboardScreen() {
       </Card>
 
       {/* Mock Test Tracker */}
-      <Card>
+      <Card className="glass-card border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileCheck className="h-5 w-5" />
@@ -228,15 +228,15 @@ export function DashboardScreen() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
+            <div className="text-center p-3 stat-card">
               <div className="text-2xl font-bold text-primary">{fullTests}</div>
               <p className="text-xs text-muted-foreground">Full Tests</p>
             </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
+            <div className="text-center p-3 stat-card">
               <div className="text-2xl font-bold text-primary">{topicTests}</div>
               <p className="text-xs text-muted-foreground">Topic Tests</p>
             </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
+            <div className="text-center p-3 stat-card">
               <div className="text-2xl font-bold text-primary">{chapterTests}</div>
               <p className="text-xs text-muted-foreground">Chapter Tests</p>
             </div>
@@ -258,7 +258,7 @@ export function DashboardScreen() {
 
       {/* Focus Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Study</CardTitle>
             <Timer className="h-4 w-4 text-muted-foreground" />
@@ -273,7 +273,7 @@ export function DashboardScreen() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Weekly Average</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -286,7 +286,7 @@ export function DashboardScreen() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
             <Flame className="h-4 w-4 text-orange-500" />
@@ -301,7 +301,7 @@ export function DashboardScreen() {
       </div>
 
       {/* Quick Actions */}
-      <Card>
+      <Card className="glass-card border-0">
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
@@ -309,7 +309,7 @@ export function DashboardScreen() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Button
               onClick={() => setCurrentScreen('pomodoro')}
-              className="flex flex-col items-center gap-2 h-20"
+              className="flex flex-col items-center gap-2 h-20 glow-button border-0"
             >
               <Play className="h-5 w-5" />
               <span className="text-xs">Start Focus</span>
@@ -343,7 +343,7 @@ export function DashboardScreen() {
       </Card>
 
       {/* Motivational Quote */}
-      <Card>
+      <Card className="glass-card border-0">
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
             <div className="flex-1">
@@ -365,14 +365,14 @@ export function DashboardScreen() {
 
       {/* Recently Unlocked Badges */}
       {recentBadges.length > 0 && (
-        <Card>
+        <Card className="glass-card border-0">
           <CardHeader>
             <CardTitle className="text-base">Recently Unlocked</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {recentBadges.map((badge) => (
-                <Card key={badge.id} className="border-dashed">
+                <Card key={badge.id} className="stat-card border-0">
                   <CardContent className="flex items-center gap-3 p-4">
                     <div className="text-3xl">{badge.icon}</div>
                     <div className="flex-1">
