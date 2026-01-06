@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Static export for Vercel deployment
-  output: "export",
+  // Static export disabled for Vercel (Vercel handles SSR natively)
+  // output: "export",
 
   // Disable image optimization for static export
   images: {

@@ -54,3 +54,8 @@ android/app/.cxx/
 # Electron outputs
 dist/
 *.exe
+
+# Large downloads/tools
+*.zip
+android-tools.zip
+commandlinetools-*.zip
